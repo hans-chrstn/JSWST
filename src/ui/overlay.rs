@@ -1,8 +1,8 @@
 use crate::{Region, config::Config};
 use gtk4::prelude::*;
 use gtk4::{
-    Application, ApplicationWindow, DrawingArea, EventControllerKey, EventControllerMotion,
-    GestureClick, gdk, glib,
+    Application, ApplicationWindow, CssProvider, DrawingArea, EventControllerKey,
+    EventControllerMotion, GestureClick, gdk, glib,
 };
 use std::cell::RefCell;
 use std::rc::Rc;
@@ -32,6 +32,13 @@ impl SelectionOverlay {
             .build();
 
         let display = gdk::Display::default().expect("Could not get default display");
+        let provider = CssProvider::new();
+        provider.load_from_data("window { background: transparent; }");
+        gtk4::style_context_add_provider_for_display(
+            &display,
+            &provider,
+            gtk4::STYLE_PROVIDER_PRIORITY_APPLICATION,
+        );
         let monitor = display
             .monitors()
             .item(0)
