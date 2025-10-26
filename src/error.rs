@@ -19,6 +19,9 @@ pub enum ScreenshotError {
     #[error("Invalid configuration: {0}")]
     Config(String),
 
+    #[error("Configuration parse error: {0}")]
+    ConfigParse(String),
+
     #[error("Invalid region: {0}")]
     InvalidRegion(String),
 
@@ -42,5 +45,23 @@ pub enum ScreenshotError {
 impl From<anyhow::Error> for ScreenshotError {
     fn from(err: anyhow::Error) -> Self {
         ScreenshotError::Unknown(err.to_string())
+    }
+}
+
+impl From<toml::de::Error> for ScreenshotError {
+    fn from(value: toml::de::Error) -> Self {
+        ScreenshotError::ConfigParse(value.to_string())
+    }
+}
+
+impl From<toml::ser::Error> for ScreenshotError {
+    fn from(value: toml::ser::Error) -> Self {
+        ScreenshotError::ConfigParse(value.to_string())
+    }
+}
+
+impl From<serde_json::Error> for ScreenshotError {
+    fn from(value: serde_json::Error) -> Self {
+        ScreenshotError::ConfigParse(value.to_string())
     }
 }
