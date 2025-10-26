@@ -18,6 +18,11 @@ pub async fn execute(args: Args) -> Result<()> {
 async fn execute_capture(args: Args, config: Config) -> Result<()> {
     let mode = args.parse_mode().unwrap_or(config.default_mode);
 
+    #[cfg(feature = "gui")]
+    if !args.headless && (mode == CaptureMode::Region || mode == CaptureMode::Window) {
+        return crate::ui::launch_gui(config).await;
+    }
+
     let format = args.parse_format().unwrap_or(config.default_format);
 
     let options = CaptureOptions {
@@ -90,21 +95,14 @@ async fn execute_subcommand(command: crate::cli::args::Commands, config: &Config
     match command {
         #[cfg(feature = "gui")]
         Commands::Gui => {
-            info!("GUI mode requires implementing the UI module");
-            Err(ScreenshotError::Config(
-                "GUI mode not yet implemented".to_string(),
-            ))
+            info!("Launching GUI mode...");
+            crate::ui::launch_gui(config.clone()).await
         }
 
         #[cfg(feature = "gui")]
         Commands::Edit { file } => {
-            info!(
-                "Editor mode requires implementing the UI module: {}",
-                file.display()
-            );
-            Err(ScreenshotError::Config(
-                "Editor mode not yet implemented".to_string(),
-            ))
+            info!("Opening editor for: {}", file.display());
+            crate::ui::launch_editor(file, config.clone()).await
         }
 
         Commands::List { what } => {
@@ -152,7 +150,11 @@ async fn execute_subcommand(command: crate::cli::args::Commands, config: &Config
             Ok(())
         }
 
-        Commands::Config { show, reset, edit } => {
+        Commands::Config {
+            show: _,
+            reset,
+            edit,
+        } => {
             if reset {
                 let default_config = Config::default();
                 default_config.save()?;
