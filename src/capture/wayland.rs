@@ -43,21 +43,14 @@ impl WaylandBackend {
 #[async_trait]
 impl ScreenshotBackend for WaylandBackend {
     async fn capture(&self, mode: CaptureMode, options: &CaptureOptions) -> Result<Screenshot> {
-        // Apply delay if specified
         if let Some(delay) = options.delay {
             tokio::time::sleep(delay).await;
         }
 
         let data = match mode {
             CaptureMode::Screen => self.capture_via_portal(false).await?,
-            CaptureMode::Window | CaptureMode::Region => {
-                // Interactive mode for window/region selection
-                self.capture_via_portal(true).await?
-            }
-            CaptureMode::Monitor => {
-                // Use specified monitor or default
-                self.capture_via_portal(false).await?
-            }
+            CaptureMode::Window | CaptureMode::Region => self.capture_via_portal(true).await?,
+            CaptureMode::Monitor => self.capture_via_portal(false).await?,
         };
 
         let data = if let Some(region) = options.region {

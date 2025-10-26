@@ -33,10 +33,10 @@ impl std::str::FromStr for CaptureMode {
 
     fn from_str(s: &str) -> std::result::Result<Self, Self::Err> {
         match s.to_lowercase().as_str() {
-            "screen" | "fullscreen" | "full" => Ok(CaptureMode::Screen),
-            "window" | "win" => Ok(CaptureMode::Window),
-            "region" | "area" | "selection" | "select" => Ok(CaptureMode::Region),
-            "monitor" | "display" => Ok(CaptureMode::Monitor),
+            "screen" | "fullscreen" | "full" => Ok(Self::Screen),
+            "window" | "win" => Ok(Self::Window),
+            "region" | "area" | "selection" | "select" => Ok(Self::Region),
+            "monitor" | "display" => Ok(Self::Monitor),
             _ => Err(format!("Invalid capture mode: {}", s)),
         }
     }
@@ -56,10 +56,10 @@ impl std::str::FromStr for OutputFormat {
 
     fn from_str(s: &str) -> std::result::Result<Self, Self::Err> {
         match s.to_lowercase().as_str() {
-            "png" => Ok(OutputFormat::Png),
-            "jpg" | "jpeg" => Ok(OutputFormat::Jpeg),
-            "webp" => Ok(OutputFormat::Webp),
-            "clip" | "clipboard" => Ok(OutputFormat::Clipboard),
+            "png" => Ok(Self::Png),
+            "jpg" | "jpeg" => Ok(Self::Jpeg),
+            "webp" => Ok(Self::Webp),
+            "clip" | "clipboard" => Ok(Self::Clipboard),
             _ => Err(format!("Invalid format: {}", s)),
         }
     }
@@ -78,9 +78,7 @@ pub struct ScreenshotMetadata {
 #[async_trait]
 pub trait ScreenshotBackend: Send + Sync {
     async fn capture(&self, mode: CaptureMode, options: &CaptureOptions) -> Result<Screenshot>;
-
     async fn get_displays(&self) -> Result<Vec<Display>>;
-
     async fn get_activate_window(&self) -> Result<Option<WindowInfo>>;
 }
 

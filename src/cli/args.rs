@@ -43,6 +43,9 @@ pub struct Args {
 
     #[command(subcommand)]
     pub command: Option<Commands>,
+
+    #[arg(short, long)]
+    pub verbose: bool,
 }
 
 #[derive(Subcommand, Debug)]
