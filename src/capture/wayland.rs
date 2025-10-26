@@ -28,7 +28,13 @@ impl WaylandBackend {
             .to_file_path()
             .map_err(|_| ScreenshotError::Portal("Invalid file path".to_string()))?;
 
-        let img = image::open(&path).map_err(|e| ScreenshotError::Image(e))?;
+        let bytes = tokio::fs::read(&path)
+            .await
+            .map_err(|e| ScreenshotError::Io(e))?;
+
+        let img = image::load_from_memory(&bytes).map_err(ScreenshotError::Image)?;
+
+        let _ = tokio::fs::remove_file(path).await;
 
         Ok(img.to_rgba8())
     }

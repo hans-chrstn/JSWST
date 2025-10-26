@@ -1,4 +1,4 @@
-use crate::{Region, config::Config};
+use crate::{Region, cli, config::Config};
 use gtk4::prelude::*;
 use gtk4::{
     Application, ApplicationWindow, CssProvider, DrawingArea, EventControllerKey,
@@ -7,6 +7,7 @@ use gtk4::{
 use std::cell::RefCell;
 use std::rc::Rc;
 use std::time::Instant;
+use tracing::info;
 
 use super::widgets::AnimatedWidget;
 
@@ -18,7 +19,6 @@ pub struct SelectionOverlay {
     animated_widget: Rc<RefCell<AnimatedWidget>>,
     #[allow(dead_code)]
     screen_width: f64,
-    #[allow(dead_code)]
     config: Config,
 }
 
@@ -181,22 +181,50 @@ impl SelectionOverlay {
         {
             let selection = selection.clone();
             let window = window.clone();
+            let monitor_geom = geometry;
+            key_controller.connect_key_pressed(move |_, key, _, _| match key {
+                gdk::Key::space => {
+                    if let Some(mut sel) = *selection.borrow() {
+                        let window_clone = window.clone();
 
-            key_controller.connect_key_pressed(move |_, key, _, _| {
-                match key {
-                    gdk::Key::space => {
-                        if let Some(sel) = *selection.borrow() {
-                            println!("Saving screenshot for region: {:?}", sel);
-                            // TODO: Trigger screenshot capture
-                        }
-                        glib::Propagation::Stop
+                        glib::MainContext::default().spawn_local(async move {
+                            sel.x += monitor_geom.x();
+                            sel.y += monitor_geom.y();
+
+                            info!("Region selected via GUI: {:?}", sel);
+
+                            let args = cli::Args {
+                                mode: Some("screen".to_string()),
+                                output: None,
+                                format: None,
+                                delay: None,
+                                clipboard: false,
+                                cursor: false,
+                                quiet: false,
+                                json: false,
+                                headless: true, // This is important!
+                                region: Some(format!(
+                                    "{},{},{},{}",
+                                    sel.x, sel.y, sel.width, sel.height
+                                )),
+                                monitor: None,
+                                command: None,
+                            };
+
+                            if let Err(e) = cli::execute(args).await {
+                                eprintln!("Failed to capture and save: {}", e);
+                            }
+
+                            window_clone.close();
+                        });
                     }
-                    gdk::Key::Escape => {
-                        window.close();
-                        glib::Propagation::Stop
-                    }
-                    _ => glib::Propagation::Proceed,
+                    glib::Propagation::Stop
                 }
+                gdk::Key::Escape => {
+                    window.close();
+                    glib::Propagation::Stop
+                }
+                _ => glib::Propagation::Proceed,
             });
         }
 
