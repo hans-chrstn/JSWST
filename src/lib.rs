@@ -14,11 +14,10 @@ pub mod animation;
 #[cfg(feature = "gui")]
 pub mod tools;
 
-use std::str::FromStr;
-
 use async_trait::async_trait;
-pub use error::{Result, ScreenshotError};
 use serde::{Deserialize, Serialize};
+
+pub use error::{Result, ScreenshotError};
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "lowercase")]
@@ -29,7 +28,7 @@ pub enum CaptureMode {
     Monitor,
 }
 
-impl FromStr for CaptureMode {
+impl std::str::FromStr for CaptureMode {
     type Err = String;
 
     fn from_str(s: &str) -> std::result::Result<Self, Self::Err> {
@@ -52,7 +51,7 @@ pub enum OutputFormat {
     Clipboard,
 }
 
-impl FromStr for OutputFormat {
+impl std::str::FromStr for OutputFormat {
     type Err = String;
 
     fn from_str(s: &str) -> std::result::Result<Self, Self::Err> {

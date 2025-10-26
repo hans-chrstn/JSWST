@@ -1,3 +1,5 @@
+use clap::Parser;
+use just_a_simple_wayland_screenshot_tool::{Result, cli};
 use tracing_subscriber;
 
 #[tokio::main]
