@@ -1,0 +1,43 @@
+[package]
+name = "just-a-simple-wayland-screenshot-tool"
+version = "0.1.0"
+edition = "2024"
+
+[[bin]]
+name = "jswst"
+path = "src/main.rs"
+
+[dependencies]
+gtk4 = { version = "0.9", optional = true }
+gdk4 = { version = "0.9", optional = true }
+gdk4-wayland = { version = "0.9", optional = true }
+cairo-rs = { version = "0.20", optional = true }
+glib = { version = "0.20", optional = true }
+ashpd = { version = "0.9", features = ["wayland"] }
+async-trait = "0.1"
+tokio = { version = "1", features = ["full"] }
+anyhow = "1.0"
+thiserror = "1.0"
+image = "0.25"
+imageproc = "0.25"
+clap = { version = "4.5", features = ["derive", "cargo"] }
+clap_complete = "4.5"
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+toml = "0.8"
+chrono = "0.4"
+directories = "5.0"
+once_cell = "1.19"
+tracing = "0.1"
+tracing-subscriber = { version = "0.3", features = ["std", "env-filter"] }
+
+[features]
+default = ["gui"]
+gui = ["gtk4", "gdk4", "gdk4-wayland", "cairo-rs", "glib"]
+cli-only = []
+
+[profile.release]
+opt-level = 3
+lto = true
+codegen-units = 1
+stip = true
